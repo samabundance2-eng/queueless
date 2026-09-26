@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QUEUELESS Staff Dashboard</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #071E26;
+      color: white;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 700px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+
+    .logo {
+      font-size: 25px;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .logo span {
+      color: #18A999;
+    }
+
+    .staff-badge {
+      background: #123B4A;
+      color: #65DFD0;
+      padding: 8px 13px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .card {
+      background: #0C2A34;
+      border: 1px solid #164552;
+      border-radius: 18px;
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+
+    .card-title {
+      color: #65DFD0;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .current-number {
+      font-size: 58px;
+      font-weight: bold;
+      color: white;
+      text-align: center;
+      margin: 10px 0;
+    }
+
+    .current-name {
+      text-align: center;
+      font-size: 18px;
+      margin-bottom: 5px;
+    }
+
+    .current-service {
+      text-align: center;
+      color: #9fc5c1;
+      font-size: 14px;
+    }
+
+    .call-btn {
+      width: 100%;
+      border: none;
+      background: #18A999;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      padding: 17px;
+      border-radius: 14px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+
+    .call-btn:active {
+      transform: scale(0.98);
+    }
+
+    .call-btn:hover {
+      background: #159687;
+    }
+
+    .queue-item {
+      background: #123B4A;
+      border-radius: 14px;
+      padding: 15px;
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .queue-left {
+      min-width: 0;
+    }
+
+    .queue-number {
+      color: #65DFD0;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .patient-name {
+      font-size: 15px;
+      margin-top: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .service {
+      color: #9fc5c1;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .position {
+      background: #0C2A34;
+      color: #65DFD0;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .empty {
+      text-align: center;
+      color: #8aa9a6;
+      padding: 25px 10px;
+      font-size: 14px;
+    }
+
+    .status {
+      text-align: center;
+      color: #8aa9a6;
+      font-size: 12px;
+      margin-top: 10px;
+    }
+
+    .live {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #65DFD0;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      background: #18A999;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 15px;
+      }
+
+      .current-number {
+        font-size: 50px;
+      }
+
+      .logo {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <header>
+      <div class="logo">QUEUE<span>LESS</span></div>
+      <div class="staff-badge">STAFF</div>
+    </header>
+
+    <!-- CURRENT PATIENT -->
+    <div class="card">
+      <div class="card-title">
+        <span class="live">
+          <span class="live-dot"></span>
+          Currently Serving
+        </span>
+      </div>
+
+      <div id="currentNumber" class="current-number">
+        —
+      </div>
+
+      <div id="currentName" class="current-name">
+        No patient
+      </div>
+
+      <div id="currentService" class="current-service">
+        —
+      </div>
+    </div>
+
+    <!-- CALL NEXT -->
+    <button class="call-btn" onclick="callNext()">
+      CALL NEXT
+    </button>
+
+    <!-- WAITING QUEUE -->
+    <div class="card">
+
+      <div class="card-title">
+        Waiting Queue
+      </div>
+
+      <div id="queueList">
+        <div class="empty">
+          Loading queue...
+        </div>
+      </div>
+
+    </div>
+
+    <div id="status" class="status">
+      Updating automatically...
+    </div>
+
+  </div>
+
+
+  <script>
+
+    // ==============================
+    // SUPABASE CONNECTION
+    // ==============================
+
+    const SUPABASE_URL =
+      "https://zqnxzvclwkljhgnijduc.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_zeVLbVXNmCaoHDeco58fLQ_t7AbifbD";
+
+    const supabaseClient =
+      supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
+
+    // ==============================
+    // LOAD QUEUE
+    // ==============================
+
+    async function loadQueue() {
+
+      const { data, error } =
+        await supabaseClient
+          .from("queue_entries")
+          .select("*")
+          .order("joined_at", {
+            ascending: true
+          });
+
+      if (error) {
+        console.error(error);
+
+        document.getElementById("queueList").innerHTML =
+          `<div class="empty">
+            Unable to load queue.
+          </div>`;
+
+        return;
+      }
+
+
+      // Find currently called patient
+      const current =
+        data.find(
+          entry => entry.status === "called"
+        );
+
+
+      // Find waiting patients
+      const waiting =
+        data.filter(
+          entry => entry.status === "waiting"
+        );
+
+
+      updateCurrent(current);
+
+      displayQueue(waiting);
+    }
+
+
+    // ==============================
+    // CURRENT PATIENT
+    // ==============================
+
+    function updateCurrent(current) {
+
+      const number =
+        document.getElementById("currentNumber");
+
+      const name =
+        document.getElementById("currentName");
+
+      const service =
+        document.getElementById("currentService");
+
+
+      if (!current) {
+
+        number.textContent = "—";
+        name.textContent = "No patient";
+        service.textContent = "—";
+
+        return;
+      }
+
+
+      number.textContent =
+        current.queue_number;
+
+      name.textContent =
+        current.patient_name;
+
+      service.textContent =
+        current.service;
+    }
+
+
+    // ==============================
+    // DISPLAY WAITING QUEUE
+    // ==============================
+
+    function displayQueue(waiting) {
+
+      const queueList =
+        document.getElementById("queueList");
+
+
+      if (!waiting || waiting.length === 0) {
+
+        queueList.innerHTML =
+          `<div class="empty">
+            No patients are currently waiting.
+          </div>`;
+
+        return;
+      }
+
+
+      queueList.innerHTML = "";
+
+
+      waiting.forEach((patient, index) => {
+
+        const item =
+          document.createElement("div");
+
+        item.className = "queue-item";
+
+
+        item.innerHTML = `
+
+          <div class="queue-left">
+
+            <div class="queue-number">
+              ${patient.queue_number}
+            </div>
+
+            <div class="patient-name">
+              ${escapeHTML(patient.patient_name)}
+            </div>
+
+            <div class="service">
+              ${escapeHTML(patient.service)}
+            </div>
+
+          </div>
+
+          <div class="position">
+            #${index + 1}
+          </div>
+
+        `;
+
+
+        queueList.appendChild(item);
+
+      });
+    }
+
+
+    // ==============================
+    // CALL NEXT PATIENT
+    // ==============================
+
+    async function callNext() {
+
+      const button =
+        document.querySelector(".call-btn");
+
+      button.disabled = true;
+      button.textContent = "CALLING...";
+
+
+      try {
+
+        // Get current called patient
+        const { data: currentPatients, error: currentError } =
+          await supabaseClient
+            .from("queue_entries")
+            .select("*")
+            .eq("status", "called")
+            .order("called_at", {
+              ascending: false
+            })
+            .limit(1);
+
+
+        if (currentError) {
+          throw currentError;
+        }
+
+
+        // Mark current patient as served
+        if (
+          currentPatients &&
+          currentPatients.length > 0
+        ) {
+
+          const current =
+            currentPatients[0];
+
+
+          const { error: serveError } =
+            await supabaseClient
+              .from("queue_entries")
+              .update({
+                status: "served",
+                served_at: new Date().toISOString()
+              })
+              .eq("id", current.id);
+
+
+          if (serveError) {
+            throw serveError;
+          }
+        }
+
+
+        // Find next waiting patient
+        const { data: nextPatients, error: nextError } =
+          await supabaseClient
+            .from("queue_entries")
+            .select("*")
+            .eq("status", "waiting")
+            .order("joined_at", {
+              ascending: true
+            })
+            .limit(1);
+
+
+        if (nextError) {
+          throw nextError;
+        }
+
+
+        // If nobody is waiting
+        if (
+          !nextPatients ||
+          nextPatients.length === 0
+        ) {
+
+          await loadQueue();
+
+          button.textContent = "CALL NEXT";
+          button.disabled = false;
+
+          return;
+        }
+
+
+        // Call next patient
+        const next =
+          nextPatients[0];
+
+
+        const { error: callError } =
+          await supabaseClient
+            .from("queue_entries")
+            .update({
+              status: "called",
+              called_at: new Date().toISOString()
+            })
+            .eq("id", next.id);
+
+
+        if (callError) {
+          throw callError;
+        }
+
+
+        // Refresh screen
+        await loadQueue();
+
+
+      } catch (error) {
+
+        console.error(error);
+
+        alert(
+          "Something went wrong while calling the next patient."
+        );
+
+      }
+
+
+      button.textContent = "CALL NEXT";
+      button.disabled = false;
+    }
+
+
+    // ==============================
+    // SECURITY HELPER
+    // ==============================
+
+    function escapeHTML(value) {
+
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+
+    // ==============================
+    // INITIAL LOAD
+    // ==============================
+
+    loadQueue();
+
+
+    // ==============================
+    // AUTO REFRESH
+    // ==============================
+
+    setInterval(() => {
+
+      loadQueue();
+
+    }, 5000);
+
+  </script>
+
+</body>
+                               </html>
