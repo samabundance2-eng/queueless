@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QUEUELESS — Staff Dashboard</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f3f6f4;color:#102018}
+.wrap{max-width:900px;margin:auto;padding:20px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px}
+.logo{font-size:14px;font-weight:800;letter-spacing:2px;color:#087443}.clinic{color:#68736d;font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}.stat,.panel{background:#fff;border:1px solid #e1e8e3;border-radius:18px;padding:18px}.stat small{color:#68736d}.stat strong{display:block;font-size:28px;margin-top:6px}
+.panel{margin-bottom:18px}.panel h2{font-size:18px;margin:0 0 15px}.current{display:flex;justify-content:space-between;align-items:center;gap:20px;background:#eef8f2;border-radius:14px;padding:18px}
+.big{font-size:36px;font-weight:800;color:#087443}button{border:0;border-radius:11px;padding:13px 17px;font-weight:700;font-size:15px;cursor:pointer;background:#087443;color:white}.secondary{background:white;color:#087443;border:1px solid #cbd7d0}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px 8px;border-bottom:1px solid #e8eeea;font-size:14px}th{color:#68736d}.badge{padding:5px 8px;border-radius:20px;background:#f0f3f1;font-size:12px;font-weight:700}.served{background:#e7f5ed;color:#087443}.waiting{color:#8a6200;background:#fff6dc}
+.actions{display:flex;gap:10px;flex-wrap:wrap}.note{color:#68736d;font-size:13px;line-height:1.5}@media(max-width:650px){.grid{grid-template-columns:repeat(2,1fr)}.current{align-items:flex-start;flex-direction:column}table{min-width:560px}.table-scroll{overflow-x:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="top"><div><div class="logo">QUEUELESS</div><h1 style="margin:5px 0;font-size:27px">Staff Dashboard</h1><div class="clinic">General Consultation • Demo Clinic</div></div><span id="live" class="badge served">● LIVE</span></div>
+
+<div class="grid">
+<div class="stat"><small>Waiting</small><strong id="waitingCount">8</strong></div>
+<div class="stat"><small>Served today</small><strong id="servedCount">31</strong></div>
+<div class="stat"><small>Avg. wait</small><strong id="avgWait">32m</strong></div>
+<div class="stat"><small>Current</small><strong id="currentStat">A039</strong></div>
+</div>
+
+<section class="panel">
+<h2>Now Serving</h2>
+<div class="current">
+<div><div class="note">Patient currently being served</div><div class="big" id="current">A039</div></div>
+<div class="actions"><button id="next">Call Next Patient</button><button id="serve" class="secondary">Mark Served</button></div>
+</div>
+<p class="note" id="message" aria-live="polite">The next patient in line is A040.</p>
+</section>
+
+<section class="panel">
+<h2>Queue</h2>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Number</th><th>Status</th><th>Estimated wait</th></tr></thead>
+<tbody id="queue"></tbody>
+</table>
+</div>
+</section>
+
+<section class="panel">
+<h2>What this dashboard will become</h2>
+<p class="note">This first version uses local demo data. In the next stage, we'll connect this dashboard and the patient page to the same database so queue changes are real-time and persistent.</p>
+</section>
+</div>
+
+<script>
+const patients=[
+ {n:"A040",wait:28,status:"Waiting"},
+ {n:"A041",wait:24,status:"Waiting"},
+ {n:"A042",wait:20,status:"Waiting"},
+ {n:"A043",wait:16,status:"Waiting"},
+ {n:"A044",wait:12,status:"Waiting"},
+ {n:"A045",wait:8,status:"Waiting"},
+ {n:"A046",wait:4,status:"Waiting"},
+ {n:"A047",wait:0,status:"Waiting"}
+];
+let current=39,served=31;
+
+function render(){
+ const tbody=document.getElementById("queue");tbody.innerHTML="";
+ patients.forEach(p=>{
+  const tr=document.createElement("tr");
+  tr.innerHTML=`<td><b>${p.n}</b></td><td><span class="badge waiting">${p.status}</span></td><td>${p.wait===0?"Next":p.wait+" min"}</td>`;
+  tbody.appendChild(tr);
+ });
+ document.getElementById("waitingCount").textContent=patients.length;
+ document.getElementById("servedCount").textContent=served;
+ document.getElementById("current").textContent="A"+String(current).padStart(3,"0");
+ document.getElementById("currentStat").textContent="A"+String(current).padStart(3,"0");
+ document.getElementById("avgWait").textContent=(patients.length?Math.max(4,Math.round(patients.reduce((a,p)=>a+p.wait,0)/patients.length)):"0")+"m";
+ document.getElementById("message").textContent=patients.length?"The next patient in line is "+patients[0].n+".":"The queue is currently empty.";
+}
+
+document.getElementById("next").onclick=()=>{
+ if(!patients.length)return;
+ const p=patients.shift();current=parseInt(p.n.slice(1));served++;
+ patients.forEach((x,i)=>x.wait=Math.max(0,4*(patients.length-i-1)));
+ document.getElementById("message").textContent=p.n+" has been called. The next patient is "+(patients[0]?.n||"none")+".";
+ render();
+};
+
+document.getElementById("serve").onclick=()=>{
+ document.getElementById("message").textContent="A"+String(current).padStart(3,"0")+" has been marked as served.";
+ render();
+};
+
+render();
+</script>
+</body>
+</html>
