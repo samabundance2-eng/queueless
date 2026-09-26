@@ -1,0 +1,1160 @@
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QUEUELESS</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
+body{
+  font-family:Arial,Helvetica,sans-serif;
+  background:#071E26;
+  color:#fff;
+  min-height:100vh;
+}
+
+header{
+  height:76px;
+  padding:0 5%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  background:#071E26;
+}
+
+.logo{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.logo-icon{
+  width:42px;
+  height:42px;
+  border-radius:12px;
+  background:#18A999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:21px;
+  font-weight:bold;
+}
+
+.logo h1{
+  font-size:20px;
+  letter-spacing:1px;
+}
+
+.logo p{
+  font-size:10px;
+  color:#8EA8AF;
+  margin-top:3px;
+}
+
+.live{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:8px 13px;
+  border-radius:20px;
+  background:rgba(24,169,153,.12);
+  color:#65DFD0;
+  font-size:10px;
+  font-weight:bold;
+}
+
+.dot{
+  width:7px;
+  height:7px;
+  background:#18A999;
+  border-radius:50%;
+}
+
+.container{
+  width:92%;
+  max-width:480px;
+  margin:auto;
+  padding:35px 0 50px;
+}
+
+.screen{
+  display:none;
+}
+
+.screen.active{
+  display:block;
+}
+
+.hero{
+  text-align:center;
+  margin:25px 0 30px;
+}
+
+.hero h2{
+  font-size:34px;
+  margin-bottom:10px;
+}
+
+.hero p{
+  color:#8EA8AF;
+  font-size:14px;
+  line-height:1.5;
+}
+
+.card{
+  background:#0C2A34;
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:23px;
+  padding:24px;
+  margin-bottom:18px;
+  box-shadow:0 18px 50px rgba(0,0,0,.18);
+}
+
+label{
+  display:block;
+  font-size:12px;
+  color:#A9BDC2;
+  margin-bottom:8px;
+  font-weight:bold;
+}
+
+input,select{
+  width:100%;
+  padding:15px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.1);
+  background:#071E26;
+  color:#fff;
+  outline:none;
+  margin-bottom:18px;
+  font-size:14px;
+}
+
+input:focus,select:focus{
+  border-color:#18A999;
+}
+
+button{
+  border:0;
+  cursor:pointer;
+  font-weight:bold;
+  border-radius:12px;
+  padding:14px;
+  font-size:13px;
+}
+
+.primary{
+  width:100%;
+  background:#18A999;
+  color:white;
+}
+
+.primary:active{
+  transform:scale(.98);
+}
+
+.secondary{
+  background:#123B4A;
+  color:#B9D0D4;
+}
+
+.back{
+  background:transparent;
+  color:#65DFD0;
+  padding:5px 0;
+}
+
+.queue-card{
+  text-align:center;
+}
+
+.queue-label{
+  font-size:11px;
+  letter-spacing:2px;
+  color:#65DFD0;
+  font-weight:bold;
+}
+
+.queue-number{
+  font-size:86px;
+  font-weight:800;
+  letter-spacing:-4px;
+  margin:12px 0;
+}
+
+.service{
+  color:#91AAB1;
+  font-size:14px;
+}
+
+.status{
+  margin:22px 0;
+  padding:12px;
+  border-radius:30px;
+  background:rgba(24,169,153,.12);
+  color:#65DFD0;
+  font-size:12px;
+  font-weight:bold;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.stat{
+  background:#071E26;
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:16px;
+  padding:17px;
+  text-align:left;
+}
+
+.stat small{
+  display:block;
+  color:#789198;
+  font-size:9px;
+  letter-spacing:1px;
+  margin-bottom:8px;
+}
+
+.stat strong{
+  font-size:24px;
+}
+
+.actions{
+  display:flex;
+  gap:10px;
+  margin-top:15px;
+}
+
+.actions button{
+  flex:1;
+}
+
+.queue-item{
+  background:#0C2A34;
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:18px;
+  padding:18px;
+  margin-bottom:12px;
+}
+
+.queue-item-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.queue-item-number{
+  font-size:28px;
+  font-weight:bold;
+}
+
+.queue-item p{
+  color:#849BA1;
+  font-size:12px;
+  margin-top:7px;
+}
+
+.badge{
+  padding:6px 10px;
+  border-radius:20px;
+  background:rgba(24,169,153,.12);
+  color:#65DFD0;
+  font-size:9px;
+  font-weight:bold;
+}
+
+.view{
+  width:100%;
+  margin-top:13px;
+  background:#123B4A;
+  color:#fff;
+}
+
+.remove{
+  width:100%;
+  margin-top:8px;
+  background:rgba(200,60,60,.1);
+  color:#E88A8A;
+  padding:10px;
+}
+
+.empty{
+  text-align:center;
+  padding:35px 20px;
+}
+
+.empty h3{
+  margin-bottom:8px;
+}
+
+.empty p{
+  color:#81979D;
+  font-size:13px;
+}
+
+.error{
+  display:none;
+  background:rgba(220,70,70,.12);
+  color:#F09595;
+  padding:12px;
+  border-radius:12px;
+  margin-bottom:15px;
+  font-size:12px;
+}
+
+.refresh{
+  width:100%;
+  margin-top:12px;
+  background:#123B4A;
+  color:#BBD0D4;
+}
+
+.footer{
+  text-align:center;
+  color:#5F777E;
+  font-size:10px;
+  margin-top:30px;
+}
+
+.footer strong{
+  color:#18A999;
+}
+
+@media(max-width:360px){
+  .queue-number{
+    font-size:70px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+
+  <div class="logo">
+
+    <div class="logo-icon">Q</div>
+
+    <div>
+      <h1>QUEUELESS</h1>
+      <p>Leave the queue. Keep your place.</p>
+    </div>
+
+  </div>
+
+  <div class="live">
+    <span class="dot"></span>
+    LIVE
+  </div>
+
+</header>
+
+
+<div class="container">
+
+
+<!-- MY QUEUES -->
+
+<section id="homeScreen" class="screen">
+
+  <div class="hero">
+
+    <h2>My Queues</h2>
+
+    <p>
+      Keep your place without waiting in the room.
+    </p>
+
+  </div>
+
+  <div id="queueList"></div>
+
+  <button class="primary" onclick="showJoin()">
+    + JOIN NEW QUEUE
+  </button>
+
+  <div class="footer">
+    Powered by <strong>QUEUELESS</strong>
+  </div>
+
+</section>
+
+
+
+<!-- JOIN QUEUE -->
+
+<section id="joinScreen" class="screen">
+
+  <button class="back" onclick="showHome()">
+    ← My Queues
+  </button>
+
+  <div class="hero">
+
+    <h2>Join Queue</h2>
+
+    <p>
+      Get your place in line and monitor it from anywhere.
+    </p>
+
+  </div>
+
+
+  <div class="card">
+
+    <div id="errorBox" class="error"></div>
+
+    <label>YOUR NAME</label>
+
+    <input
+      id="patientName"
+      type="text"
+      placeholder="Enter your name"
+    >
+
+
+    <label>SERVICE</label>
+
+    <select id="service">
+
+      <option>
+        General Consultation
+      </option>
+
+      <option>
+        Pharmacy
+      </option>
+
+      <option>
+        Laboratory
+      </option>
+
+    </select>
+
+
+    <button
+      class="primary"
+      onclick="joinQueue()"
+    >
+      JOIN QUEUE
+    </button>
+
+  </div>
+
+</section>
+
+
+
+<!-- QUEUE DETAILS -->
+
+<section id="queueScreen" class="screen">
+
+  <button class="back" onclick="showHome()">
+    ← My Queues
+  </button>
+
+
+  <div class="card queue-card">
+
+    <div class="queue-label">
+      YOUR QUEUE NUMBER
+    </div>
+
+
+    <div
+      id="queueNumber"
+      class="queue-number"
+    >
+      —
+    </div>
+
+
+    <div
+      id="queueService"
+      class="service"
+    >
+      —
+    </div>
+
+
+    <div
+      id="statusBox"
+      class="status"
+    >
+      Waiting...
+    </div>
+
+
+    <div class="stats">
+
+      <div class="stat">
+
+        <small>
+          PEOPLE AHEAD
+        </small>
+
+        <strong id="peopleAhead">
+          0
+        </strong>
+
+      </div>
+
+
+      <div class="stat">
+
+        <small>
+          EST. WAIT
+        </small>
+
+        <strong id="estimatedWait">
+          0 min
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <div
+      class="stat"
+      style="margin-top:12px;"
+    >
+
+      <small>
+        CURRENTLY SERVING
+      </small>
+
+      <strong id="currentlyServing">
+        —
+      </strong>
+
+    </div>
+
+
+    <button
+      class="refresh"
+      onclick="refreshCurrentQueue()"
+    >
+      ↻ REFRESH QUEUE
+    </button>
+
+
+    <div class="actions">
+
+      <button
+        class="secondary"
+        onclick="showHome()"
+      >
+        MY QUEUES
+      </button>
+
+      <button
+        class="secondary"
+        onclick="showJoin()"
+      >
+        + NEW QUEUE
+      </button>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+</div>
+
+
+<script>
+
+const SUPABASE_URL =
+"https://zqnxzvclwkljhgnijduc.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_zeVLbVXNmCaoHDeco58fLQ_t7AbifbD";
+
+const supabaseClient =
+supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+
+let myQueues =
+JSON.parse(
+  localStorage.getItem(
+    "queueless_my_queues"
+  ) || "[]"
+);
+
+
+let activeQueueId =
+localStorage.getItem(
+  "queueless_active_queue"
+);
+
+
+
+function saveQueues(){
+
+  localStorage.setItem(
+    "queueless_my_queues",
+    JSON.stringify(myQueues)
+  );
+
+}
+
+
+
+function showScreen(id){
+
+  document
+    .querySelectorAll(".screen")
+    .forEach(
+      s => s.classList.remove("active")
+    );
+
+  document
+    .getElementById(id)
+    .classList.add("active");
+
+}
+
+
+
+function showHome(){
+
+  renderQueues();
+
+  showScreen("homeScreen");
+
+}
+
+
+
+function showJoin(){
+
+  showScreen("joinScreen");
+
+}
+
+
+
+function showQueue(){
+
+  showScreen("queueScreen");
+
+  refreshCurrentQueue();
+
+}
+
+
+
+function renderQueues(){
+
+  const list =
+    document.getElementById("queueList");
+
+
+  if(myQueues.length === 0){
+
+    list.innerHTML = `
+
+      <div class="card empty">
+
+        <h3>No saved queues</h3>
+
+        <p>
+          Your active queues will appear here.
+        </p>
+
+      </div>
+
+    `;
+
+    return;
+
+  }
+
+
+  list.innerHTML =
+    myQueues.map(q => `
+
+      <div class="queue-item">
+
+        <div class="queue-item-top">
+
+          <div class="queue-item-number">
+            ${escapeHTML(q.queueNumber)}
+          </div>
+
+          <div class="badge">
+            SAVED
+          </div>
+
+        </div>
+
+
+        <p>
+          ${escapeHTML(q.name)}
+          •
+          ${escapeHTML(q.service)}
+        </p>
+
+
+        <button
+          class="view"
+          onclick="openQueue('${q.id}')"
+        >
+          VIEW QUEUE
+        </button>
+
+
+        <button
+          class="remove"
+          onclick="removeQueue('${q.id}')"
+        >
+          Remove from this device
+        </button>
+
+      </div>
+
+    `).join("");
+
+}
+
+
+
+async function joinQueue(){
+
+  const name =
+    document
+      .getElementById("patientName")
+      .value
+      .trim();
+
+
+  const service =
+    document
+      .getElementById("service")
+      .value;
+
+
+  const errorBox =
+    document.getElementById("errorBox");
+
+
+  errorBox.style.display = "none";
+
+
+  if(!name){
+
+    errorBox.textContent =
+      "Please enter your name.";
+
+    errorBox.style.display =
+      "block";
+
+    return;
+
+  }
+
+
+  try{
+
+    const { data:existing,error:fetchError } =
+      await supabaseClient
+        .from("queue_entries")
+        .select("queue_number")
+        .order(
+          "joined_at",
+          {ascending:false}
+        );
+
+
+    if(fetchError)
+      throw fetchError;
+
+
+    let highest = 0;
+
+
+    existing.forEach(item => {
+
+      const number =
+        parseInt(
+          String(item.queue_number)
+            .replace(/\D/g,"")
+        ) || 0;
+
+
+      if(number > highest)
+        highest = number;
+
+    });
+
+
+    const queueNumber =
+      "Q" +
+      String(highest + 1)
+        .padStart(3,"0");
+
+
+    const {data,error} =
+      await supabaseClient
+        .from("queue_entries")
+        .insert([{
+
+          queue_number:queueNumber,
+
+          patient_name:name,
+
+          service:service,
+
+          status:"waiting"
+
+        }])
+        .select()
+        .single();
+
+
+    if(error)
+      throw error;
+
+
+    myQueues.push({
+
+      id:data.id,
+
+      queueNumber:data.queue_number,
+
+      name:data.patient_name,
+
+      service:data.service
+
+    });
+
+
+    saveQueues();
+
+
+    activeQueueId =
+      String(data.id);
+
+
+    localStorage.setItem(
+      "queueless_active_queue",
+      activeQueueId
+    );
+
+
+    document
+      .getElementById("patientName")
+      .value = "";
+
+
+    showQueue();
+
+
+  }catch(error){
+
+    console.error(error);
+
+    errorBox.textContent =
+      "Could not join the queue. Please try again.";
+
+    errorBox.style.display =
+      "block";
+
+  }
+
+}
+
+
+
+function openQueue(id){
+
+  activeQueueId =
+    String(id);
+
+
+  localStorage.setItem(
+    "queueless_active_queue",
+    activeQueueId
+  );
+
+
+  showQueue();
+
+}
+
+
+
+async function refreshCurrentQueue(){
+
+  if(!activeQueueId){
+
+    showHome();
+
+    return;
+
+  }
+
+
+  const myQueue =
+    myQueues.find(
+      q =>
+        String(q.id) ===
+        String(activeQueueId)
+    );
+
+
+  if(!myQueue){
+
+    showHome();
+
+    return;
+
+  }
+
+
+  document
+    .getElementById("queueNumber")
+    .textContent =
+    myQueue.queueNumber;
+
+
+  document
+    .getElementById("queueService")
+    .textContent =
+    myQueue.service;
+
+
+  try{
+
+    const {data,error} =
+      await supabaseClient
+        .from("queue_entries")
+        .select("*")
+        .order(
+          "joined_at",
+          {ascending:true}
+        );
+
+
+    if(error)
+      throw error;
+
+
+    const mine =
+      data.find(
+        item =>
+          String(item.id) ===
+          String(activeQueueId)
+      );
+
+
+    if(!mine)
+      return;
+
+
+    const waiting =
+      data.filter(
+        item =>
+          item.status === "waiting"
+      );
+
+
+    const called =
+      data.filter(
+        item =>
+          item.status === "called"
+      );
+
+
+    const peopleAhead =
+      waiting.filter(
+        item =>
+          new Date(item.joined_at) <
+          new Date(mine.joined_at)
+      ).length;
+
+
+    document
+      .getElementById("peopleAhead")
+      .textContent =
+      mine.status === "waiting"
+        ? peopleAhead
+        : 0;
+
+
+    document
+      .getElementById("estimatedWait")
+      .textContent =
+      mine.status === "waiting"
+        ? peopleAhead * 10 + " min"
+        : "0 min";
+
+
+    const current =
+      called.length
+        ? called[called.length - 1]
+        : null;
+
+
+    document
+      .getElementById("currentlyServing")
+      .textContent =
+      current
+        ? current.queue_number
+        : "—";
+
+
+    const status =
+      document.getElementById("statusBox");
+
+
+    if(mine.status === "called"){
+
+      status.textContent =
+        "IT'S YOUR TURN!";
+
+    }
+
+    else if(mine.status === "served"){
+
+      status.textContent =
+        "SERVICE COMPLETED";
+
+    }
+
+    else if(peopleAhead === 0){
+
+      status.textContent =
+        "YOU'RE NEXT";
+
+    }
+
+    else{
+
+      status.textContent =
+        peopleAhead +
+        " PEOPLE AHEAD";
+
+    }
+
+  }catch(error){
+
+    console.error(error);
+
+  }
+
+}
+
+
+
+function removeQueue(id){
+
+  myQueues =
+    myQueues.filter(
+      q =>
+        String(q.id) !==
+        String(id)
+    );
+
+
+  saveQueues();
+
+
+  if(
+    String(activeQueueId) ===
+    String(id)
+  ){
+
+    activeQueueId = null;
+
+    localStorage.removeItem(
+      "queueless_active_queue"
+    );
+
+  }
+
+
+  renderQueues();
+
+}
+
+
+
+function escapeHTML(value){
+
+  return String(value)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+
+}
+
+
+
+window.addEventListener(
+  "load",
+  () => {
+
+    if(
+      activeQueueId &&
+      myQueues.some(
+        q =>
+          String(q.id) ===
+          String(activeQueueId)
+      )
+    ){
+
+      showQueue();
+
+    }else{
+
+      showHome();
+
+    }
+
+  }
+);
+
+
+setInterval(
+  () => {
+
+    if(
+      document
+        .getElementById("queueScreen")
+        .classList
+        .contains("active")
+    ){
+
+      refreshCurrentQueue();
+
+    }
+
+  },
+  5000
+);
+
+</script>
+
+</body>
+  </html>
