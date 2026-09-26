@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -227,7 +229,7 @@ button{
 }
 
 .stat strong{
-  font-size:24px;
+  font-size:20px;
 }
 
 .actions{
@@ -331,6 +333,13 @@ button{
   color:#18A999;
 }
 
+.estimate-note{
+  color:#789198;
+  font-size:10px;
+  margin-top:7px;
+  line-height:1.4;
+}
+
 @media(max-width:360px){
   .queue-number{
     font-size:70px;
@@ -361,11 +370,7 @@ button{
 
 </header>
 
-
 <div class="container">
-
-
-<!-- MY QUEUES -->
 
 <section id="homeScreen" class="screen">
 
@@ -392,9 +397,6 @@ button{
 </section>
 
 
-
-<!-- JOIN QUEUE -->
-
 <section id="joinScreen" class="screen">
 
   <button class="back" onclick="showHome()">
@@ -411,7 +413,6 @@ button{
 
   </div>
 
-
   <div class="card">
 
     <div id="errorBox" class="error"></div>
@@ -424,30 +425,17 @@ button{
       placeholder="Enter your name"
     >
 
-
     <label>SERVICE</label>
 
     <select id="service">
 
-      <option>
-        General Consultation
-      </option>
-
-      <option>
-        Pharmacy
-      </option>
-
-      <option>
-        Laboratory
-      </option>
+      <option>General Consultation</option>
+      <option>Pharmacy</option>
+      <option>Laboratory</option>
 
     </select>
 
-
-    <button
-      class="primary"
-      onclick="joinQueue()"
-    >
+    <button class="primary" onclick="joinQueue()">
       JOIN QUEUE
     </button>
 
@@ -456,15 +444,11 @@ button{
 </section>
 
 
-
-<!-- QUEUE DETAILS -->
-
 <section id="queueScreen" class="screen">
 
   <button class="back" onclick="showHome()">
     ← My Queues
   </button>
-
 
   <div class="card queue-card">
 
@@ -472,38 +456,23 @@ button{
       YOUR QUEUE NUMBER
     </div>
 
-
-    <div
-      id="queueNumber"
-      class="queue-number"
-    >
+    <div id="queueNumber" class="queue-number">
       —
     </div>
 
-
-    <div
-      id="queueService"
-      class="service"
-    >
+    <div id="queueService" class="service">
       —
     </div>
 
-
-    <div
-      id="statusBox"
-      class="status"
-    >
+    <div id="statusBox" class="status">
       Waiting...
     </div>
-
 
     <div class="stats">
 
       <div class="stat">
 
-        <small>
-          PEOPLE AHEAD
-        </small>
+        <small>PEOPLE AHEAD</small>
 
         <strong id="peopleAhead">
           0
@@ -511,30 +480,25 @@ button{
 
       </div>
 
-
       <div class="stat">
 
-        <small>
-          EST. WAIT
-        </small>
+        <small>EST. WAIT</small>
 
         <strong id="estimatedWait">
-          0 min
+          Calculating...
         </strong>
 
       </div>
 
     </div>
 
+    <div class="estimate-note">
+      Estimate is based on actual completed consultations.
+    </div>
 
-    <div
-      class="stat"
-      style="margin-top:12px;"
-    >
+    <div class="stat" style="margin-top:12px;">
 
-      <small>
-        CURRENTLY SERVING
-      </small>
+      <small>CURRENTLY SERVING</small>
 
       <strong id="currentlyServing">
         —
@@ -542,28 +506,17 @@ button{
 
     </div>
 
-
-    <button
-      class="refresh"
-      onclick="refreshCurrentQueue()"
-    >
+    <button class="refresh" onclick="refreshCurrentQueue()">
       ↻ REFRESH QUEUE
     </button>
 
-
     <div class="actions">
 
-      <button
-        class="secondary"
-        onclick="showHome()"
-      >
+      <button class="secondary" onclick="showHome()">
         MY QUEUES
       </button>
 
-      <button
-        class="secondary"
-        onclick="showJoin()"
-      >
+      <button class="secondary" onclick="showJoin()">
         + NEW QUEUE
       </button>
 
@@ -573,9 +526,7 @@ button{
 
 </section>
 
-
 </div>
-
 
 <script>
 
@@ -591,7 +542,6 @@ supabase.createClient(
   SUPABASE_KEY
 );
 
-
 let myQueues =
 JSON.parse(
   localStorage.getItem(
@@ -599,12 +549,10 @@ JSON.parse(
   ) || "[]"
 );
 
-
 let activeQueueId =
 localStorage.getItem(
   "queueless_active_queue"
 );
-
 
 
 function saveQueues(){
@@ -615,7 +563,6 @@ function saveQueues(){
   );
 
 }
-
 
 
 function showScreen(id){
@@ -633,7 +580,6 @@ function showScreen(id){
 }
 
 
-
 function showHome(){
 
   renderQueues();
@@ -643,13 +589,11 @@ function showHome(){
 }
 
 
-
 function showJoin(){
 
   showScreen("joinScreen");
 
 }
-
 
 
 function showQueue(){
@@ -661,33 +605,23 @@ function showQueue(){
 }
 
 
-
 function renderQueues(){
 
   const list =
     document.getElementById("queueList");
 
-
   if(myQueues.length === 0){
 
     list.innerHTML = `
-
       <div class="card empty">
-
         <h3>No saved queues</h3>
-
-        <p>
-          Your active queues will appear here.
-        </p>
-
+        <p>Your active queues will appear here.</p>
       </div>
-
     `;
 
     return;
 
   }
-
 
   list.innerHTML =
     myQueues.map(q => `
@@ -706,13 +640,11 @@ function renderQueues(){
 
         </div>
 
-
         <p>
           ${escapeHTML(q.name)}
           •
           ${escapeHTML(q.service)}
         </p>
-
 
         <button
           class="view"
@@ -720,7 +652,6 @@ function renderQueues(){
         >
           VIEW QUEUE
         </button>
-
 
         <button
           class="remove"
@@ -736,7 +667,6 @@ function renderQueues(){
 }
 
 
-
 async function joinQueue(){
 
   const name =
@@ -745,19 +675,15 @@ async function joinQueue(){
       .value
       .trim();
 
-
   const service =
     document
       .getElementById("service")
       .value;
 
-
   const errorBox =
     document.getElementById("errorBox");
 
-
   errorBox.style.display = "none";
-
 
   if(!name){
 
@@ -771,7 +697,6 @@ async function joinQueue(){
 
   }
 
-
   try{
 
     const { data:existing,error:fetchError } =
@@ -783,13 +708,10 @@ async function joinQueue(){
           {ascending:false}
         );
 
-
     if(fetchError)
       throw fetchError;
 
-
     let highest = 0;
-
 
     existing.forEach(item => {
 
@@ -799,18 +721,15 @@ async function joinQueue(){
             .replace(/\D/g,"")
         ) || 0;
 
-
       if(number > highest)
         highest = number;
 
     });
 
-
     const queueNumber =
       "Q" +
       String(highest + 1)
         .padStart(3,"0");
-
 
     const {data,error} =
       await supabaseClient
@@ -829,10 +748,8 @@ async function joinQueue(){
         .select()
         .single();
 
-
     if(error)
       throw error;
-
 
     myQueues.push({
 
@@ -846,27 +763,21 @@ async function joinQueue(){
 
     });
 
-
     saveQueues();
-
 
     activeQueueId =
       String(data.id);
-
 
     localStorage.setItem(
       "queueless_active_queue",
       activeQueueId
     );
 
-
     document
       .getElementById("patientName")
       .value = "";
 
-
     showQueue();
-
 
   }catch(error){
 
@@ -883,23 +794,143 @@ async function joinQueue(){
 }
 
 
-
 function openQueue(id){
 
   activeQueueId =
     String(id);
-
 
   localStorage.setItem(
     "queueless_active_queue",
     activeQueueId
   );
 
-
   showQueue();
 
 }
 
+
+function averageForService(data, service){
+
+  const completed =
+    data.filter(item =>
+      item.status === "served" &&
+      item.service === service &&
+      Number(item.service_duration_minutes) > 0
+    );
+
+  if(completed.length === 0)
+    return null;
+
+  const total =
+    completed.reduce(
+      (sum,item) =>
+        sum + Number(item.service_duration_minutes),
+      0
+    );
+
+  return total / completed.length;
+
+}
+
+
+function calculateWait(data,mine){
+
+  if(mine.status !== "waiting")
+    return "0 min";
+
+  const waitingAhead =
+    data
+      .filter(item =>
+        item.status === "waiting" &&
+        new Date(item.joined_at) <
+        new Date(mine.joined_at)
+      )
+      .sort(
+        (a,b) =>
+          new Date(a.joined_at) -
+          new Date(b.joined_at)
+      );
+
+  const current =
+    data.find(
+      item =>
+        item.status === "called"
+    );
+
+  let totalMinutes = 0;
+
+  /*
+    First account for the patient
+    currently being served.
+  */
+
+  if(current){
+
+    const currentAverage =
+      averageForService(
+        data,
+        current.service
+      );
+
+    if(currentAverage){
+
+      if(current.service_started_at){
+
+        const elapsed =
+          (
+            Date.now() -
+            new Date(
+              current.service_started_at
+            ).getTime()
+          ) / 60000;
+
+        const remaining =
+          Math.max(
+            0,
+            currentAverage - elapsed
+          );
+
+        totalMinutes += remaining;
+
+      }else{
+
+        totalMinutes += currentAverage;
+
+      }
+
+    }
+
+  }
+
+  /*
+    Now account for everyone
+    waiting ahead of the patient.
+  */
+
+  for(const person of waitingAhead){
+
+    const average =
+      averageForService(
+        data,
+        person.service
+      );
+
+    if(average)
+      totalMinutes += average;
+
+  }
+
+  if(totalMinutes <= 0)
+    return "Calculating...";
+
+  return "About " +
+    Math.max(
+      1,
+      Math.round(totalMinutes)
+    ) +
+    " min";
+
+}
 
 
 async function refreshCurrentQueue(){
@@ -912,14 +943,12 @@ async function refreshCurrentQueue(){
 
   }
 
-
   const myQueue =
     myQueues.find(
       q =>
         String(q.id) ===
         String(activeQueueId)
     );
-
 
   if(!myQueue){
 
@@ -929,18 +958,15 @@ async function refreshCurrentQueue(){
 
   }
 
-
   document
     .getElementById("queueNumber")
     .textContent =
     myQueue.queueNumber;
 
-
   document
     .getElementById("queueService")
     .textContent =
     myQueue.service;
-
 
   try{
 
@@ -953,10 +979,8 @@ async function refreshCurrentQueue(){
           {ascending:true}
         );
 
-
     if(error)
       throw error;
-
 
     const mine =
       data.find(
@@ -965,54 +989,34 @@ async function refreshCurrentQueue(){
           String(activeQueueId)
       );
 
-
     if(!mine)
       return;
 
-
-    const waiting =
+    const waitingAhead =
       data.filter(
         item =>
-          item.status === "waiting"
-      );
-
-
-    const called =
-      data.filter(
-        item =>
-          item.status === "called"
-      );
-
-
-    const peopleAhead =
-      waiting.filter(
-        item =>
+          item.status === "waiting" &&
           new Date(item.joined_at) <
           new Date(mine.joined_at)
-      ).length;
-
+      );
 
     document
       .getElementById("peopleAhead")
       .textContent =
       mine.status === "waiting"
-        ? peopleAhead
+        ? waitingAhead.length
         : 0;
-
 
     document
       .getElementById("estimatedWait")
       .textContent =
-      mine.status === "waiting"
-        ? peopleAhead * 10 + " min"
-        : "0 min";
-
+      calculateWait(data,mine);
 
     const current =
-      called.length
-        ? called[called.length - 1]
-        : null;
-
+      data.find(
+        item =>
+          item.status === "called"
+      );
 
     document
       .getElementById("currentlyServing")
@@ -1021,15 +1025,18 @@ async function refreshCurrentQueue(){
         ? current.queue_number
         : "—";
 
-
     const status =
       document.getElementById("statusBox");
-
 
     if(mine.status === "called"){
 
       status.textContent =
         "IT'S YOUR TURN!";
+
+      document
+        .getElementById("estimatedWait")
+        .textContent =
+        "It's your turn";
 
     }
 
@@ -1038,9 +1045,14 @@ async function refreshCurrentQueue(){
       status.textContent =
         "SERVICE COMPLETED";
 
+      document
+        .getElementById("estimatedWait")
+        .textContent =
+        "Completed";
+
     }
 
-    else if(peopleAhead === 0){
+    else if(waitingAhead.length === 0){
 
       status.textContent =
         "YOU'RE NEXT";
@@ -1050,7 +1062,7 @@ async function refreshCurrentQueue(){
     else{
 
       status.textContent =
-        peopleAhead +
+        waitingAhead.length +
         " PEOPLE AHEAD";
 
     }
@@ -1064,7 +1076,6 @@ async function refreshCurrentQueue(){
 }
 
 
-
 function removeQueue(id){
 
   myQueues =
@@ -1074,9 +1085,7 @@ function removeQueue(id){
         String(id)
     );
 
-
   saveQueues();
-
 
   if(
     String(activeQueueId) ===
@@ -1091,11 +1100,9 @@ function removeQueue(id){
 
   }
 
-
   renderQueues();
 
 }
-
 
 
 function escapeHTML(value){
@@ -1108,7 +1115,6 @@ function escapeHTML(value){
     .replace(/'/g,"&#039;");
 
 }
-
 
 
 window.addEventListener(
@@ -1157,4 +1163,4 @@ setInterval(
 </script>
 
 </body>
-  </html>
+</html>
